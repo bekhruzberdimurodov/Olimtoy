@@ -44,13 +44,24 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout }) => 
   const children = [
     {
       id: 1,
-      name: "Aziza",
+      name: "Bexruz",
       isOnline: true,
-      battery: 87,
-      location: "Toshkent, Chilonzor",
+      battery: 42,
+      location: "Uzbekistan",
       coordinates: { lat: 41.2995, lng: 69.2401 },
       screenTime: "2s 45d",
-      device: "Samsung Galaxy A52",
+      device: "iPhone 27 Pro Max",
+      lastSeen: "Hozir"
+    },
+      {
+      id: 2,
+      name: "Azizjaan",
+      isOnline: true,
+      battery: 88,
+      location: "Uzbekistan",
+      coordinates: { lat: 41.2995, lng: 69.2401 },
+      screenTime: "2s 45d",
+      device: "iPhone 7 mini",
       lastSeen: "Hozir"
     }
   ];
@@ -126,7 +137,7 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout }) => 
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <h1 className="text-xl font-bold text-gray-900">Olimtoy Guardian</h1>
+                <h1 className="text-xl font-bold text-gray-900">Olimtoy platformasi</h1>
                 {user.isPro && (
                   <div className="flex items-center space-x-1 bg-gradient-to-r from-yellow-500 to-orange-600 text-white px-2 py-1 rounded-lg text-xs font-medium">
                     <Crown className="w-3 h-3" />
@@ -224,7 +235,7 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout }) => 
               </div>
               <h3 className="text-lg font-semibold text-gray-900">Kamera</h3>
             </div>
-            <div className="bg-gray-200 rounded-xl h-32 flex items-center justify-center mb-3 overflow-hidden">
+            <div className="bg-gray-200 rounded-xl h-72 flex items-center justify-center mb-3 overflow-hidden">
               {isCameraOn ? (
                 <video 
                   ref={videoRef}

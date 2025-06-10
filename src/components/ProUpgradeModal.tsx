@@ -43,7 +43,7 @@ const ProUpgradeModal: React.FC<ProUpgradeModalProps> = ({ isOpen, onClose, onUp
         <div className="mb-6">
           <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-2xl p-4 mb-4">
             <div className="text-center">
-              <div className="text-3xl font-bold text-gray-900 mb-2">11,110 so'm</div>
+              <div className="text-3xl font-bold text-gray-900 mb-2">1,000,000$</div>
               <div className="text-sm text-gray-600">bir martalik to'lov</div>
             </div>
           </div>
