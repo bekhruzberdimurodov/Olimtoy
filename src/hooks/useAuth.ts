@@ -10,15 +10,28 @@ export interface User {
   isPro?: boolean;
   childrenCount?: number;
   maxChildren?: number;
+  proExpiryDate?: Date;
+  proTrialDays?: number;
+}
+
+export interface Child {
+  id: string;
+  name: string;
+  key: string;
+  addedDate: string;
+  parentId: string;
 }
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [children, setChildren] = useState<Child[]>([]);
 
   useEffect(() => {
     // Check if user exists in localStorage
     const savedUser = localStorage.getItem('olimtoy_user');
+    const savedChildren = localStorage.getItem('olimtoy_children');
+    
     if (savedUser) {
       const parsedUser = JSON.parse(savedUser);
       // Ensure backward compatibility and set default values
@@ -26,9 +39,16 @@ export const useAuth = () => {
         ...parsedUser,
         isPro: parsedUser.isPro || false,
         childrenCount: parsedUser.childrenCount || 0,
-        maxChildren: parsedUser.isPro ? 10 : 1
+        maxChildren: parsedUser.isPro ? 10 : 1,
+        proExpiryDate: parsedUser.proExpiryDate ? new Date(parsedUser.proExpiryDate) : null,
+        proTrialDays: parsedUser.proTrialDays || 7
       });
     }
+
+    if (savedChildren) {
+      setChildren(JSON.parse(savedChildren));
+    }
+    
     setIsLoading(false);
   }, []);
 
@@ -41,7 +61,8 @@ export const useAuth = () => {
       createdAt: new Date(),
       isPro: false,
       childrenCount: 0,
-      maxChildren: 1
+      maxChildren: 1,
+      proTrialDays: 7
     };
     
     setUser(newUser);
@@ -82,10 +103,22 @@ export const useAuth = () => {
     }
   };
 
-  const addChild = (childKey: string) => {
+  const addChild = (childKey: string, childName?: string) => {
     if (!user || user.type !== 'parent') {
       throw new Error('Only parents can add children');
     }
+
+    const newChild: Child = {
+      id: Math.random().toString(36).substr(2, 9),
+      name: childName || `Farzand-${childKey}`,
+      key: childKey,
+      addedDate: new Date().toISOString().split('T')[0],
+      parentId: user.id
+    };
+
+    const updatedChildren = [...children, newChild];
+    setChildren(updatedChildren);
+    localStorage.setItem('olimtoy_children', JSON.stringify(updatedChildren));
 
     const updatedUser = {
       ...user,
@@ -95,6 +128,52 @@ export const useAuth = () => {
     setUser(updatedUser);
     localStorage.setItem('olimtoy_user', JSON.stringify(updatedUser));
     console.log('Child added with key:', childKey);
+    return updatedUser;
+  };
+
+  const removeChild = (childId: string) => {
+    if (!user || user.type !== 'parent') {
+      throw new Error('Only parents can remove children');
+    }
+
+    const updatedChildren = children.filter(child => child.id !== childId);
+    setChildren(updatedChildren);
+    localStorage.setItem('olimtoy_children', JSON.stringify(updatedChildren));
+
+    const updatedUser = {
+      ...user,
+      childrenCount: Math.max((user.childrenCount || 0) - 1, 0)
+    };
+
+    setUser(updatedUser);
+    localStorage.setItem('olimtoy_user', JSON.stringify(updatedUser));
+    console.log('Child removed:', childId);
+    return updatedUser;
+  };
+
+  const activateProWithCode = (code: string) => {
+    if (!user || user.type !== 'parent') {
+      throw new Error('Only parents can activate Pro');
+    }
+
+    if (code !== 'bbu2025') {
+      throw new Error('Kod noto\'g\'ri');
+    }
+
+    const proExpiryDate = new Date();
+    proExpiryDate.setDate(proExpiryDate.getDate() + 30); // 30 days
+
+    const updatedUser = {
+      ...user,
+      isPro: true,
+      maxChildren: 10,
+      proExpiryDate
+    };
+
+    // Update both state and localStorage immediately
+    setUser(updatedUser);
+    localStorage.setItem('olimtoy_user', JSON.stringify(updatedUser));
+    console.log('Pro activated with code:', updatedUser);
     return updatedUser;
   };
 
@@ -117,7 +196,9 @@ export const useAuth = () => {
 
   const logout = () => {
     setUser(null);
+    setChildren([]);
     localStorage.removeItem('olimtoy_user');
+    localStorage.removeItem('olimtoy_children');
     localStorage.removeItem('child_key');
     console.log('User logged out');
   };
@@ -135,9 +216,12 @@ export const useAuth = () => {
   return {
     user,
     isLoading,
+    children,
     loginParent,
     setupChild,
     addChild,
+    removeChild,
+    activateProWithCode,
     upgradeToPro,
     logout,
     canAddMoreChildren,

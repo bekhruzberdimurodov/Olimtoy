@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   MapPin,
   Camera,
@@ -8,7 +8,7 @@ import {
   Mic,
   Smartphone,
   Plus,
-  Settings,
+  Settings as SettingsIcon,
   LogOut,
   Users,
   Crown,
@@ -17,7 +17,9 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import ProUpgradeModal from './ProUpgradeModal';
+import Settings from './Settings';
 import Map from './Map';
+import ContactButton from './ContactButton';
 
 interface ParentDashboardProps {
   user: {
@@ -31,38 +33,77 @@ interface ParentDashboardProps {
 }
 
 const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout }) => {
-  const { addChild, upgradeToPro, canAddMoreChildren, needsProForMoreChildren } = useAuth();
+  const { addChild, canAddMoreChildren, needsProForMoreChildren } = useAuth();
 
   const [activeChild, setActiveChild] = useState(0);
   const [showAddChild, setShowAddChild] = useState(false);
   const [showProModal, setShowProModal] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const [childKey, setChildKey] = useState('');
   const [isCameraOn, setIsCameraOn] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const videoRef = useRef(null);
+  const [currentLocation, setCurrentLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [batteryLevel, setBatteryLevel] = useState(100);
+  const [deviceInfo, setDeviceInfo] = useState('');
+  const videoRef = useRef<HTMLVideoElement>(null);
 
-  // Mock children data
+  // Get real device data
+  useEffect(() => {
+    // Get location
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          setCurrentLocation({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude
+          });
+        },
+        (error) => {
+          console.log('Location error:', error);
+          // Fallback to Tashkent
+          setCurrentLocation({ lat: 41.2995, lng: 69.2401 });
+        }
+      );
+    }
+
+    // Get battery info
+    if ('getBattery' in navigator) {
+      (navigator as any).getBattery().then((battery: any) => {
+        setBatteryLevel(Math.round(battery.level * 100));
+        
+        battery.addEventListener('levelchange', () => {
+          setBatteryLevel(Math.round(battery.level * 100));
+        });
+      });
+    }
+
+    // Get device info
+    const userAgent = navigator.userAgent;
+    let deviceName = 'Unknown Device';
+    
+    if (userAgent.includes('iPhone')) {
+      deviceName = 'iPhone';
+    } else if (userAgent.includes('Android')) {
+      deviceName = 'Android Device';
+    } else if (userAgent.includes('Windows')) {
+      deviceName = 'Windows PC';
+    } else if (userAgent.includes('Mac')) {
+      deviceName = 'Mac';
+    }
+    
+    setDeviceInfo(deviceName);
+  }, []);
+
+  // Mock children data with real device info
   const children = [
     {
       id: 1,
-      name: "Bexruz",
+      name: user.name || "Siz",
       isOnline: true,
-      battery: 42,
+      battery: batteryLevel,
       location: "Uzbekistan",
-      coordinates: { lat: 41.2995, lng: 69.2401 },
+      coordinates: currentLocation || { lat: 41.2995, lng: 69.2401 },
       screenTime: "2s 45d",
-      device: "iPhone 27 Pro Max",
-      lastSeen: "Hozir"
-    },
-    {
-      id: 2,
-      name: "Azizjaan",
-      isOnline: true,
-      battery: 88,
-      location: "Uzbekistan",
-      coordinates: { lat: 41.2995, lng: 69.2401 },
-      screenTime: "2s 45d",
-      device: "iPhone 7 mini",
+      device: deviceInfo,
       lastSeen: "Hozir"
     }
   ];
@@ -76,10 +117,14 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout }) => 
     }
 
     if (childKey.length === 6) {
-      addChild(childKey);
-      console.log('Adding child with key:', childKey);
-      setShowAddChild(false);
-      setChildKey('');
+      try {
+        addChild(childKey);
+        console.log('Adding child with key:', childKey);
+        setShowAddChild(false);
+        setChildKey('');
+      } catch (error) {
+        console.error('Error adding child:', error);
+      }
     }
   };
 
@@ -97,33 +142,31 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout }) => 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
+      setIsCameraOn(true);
     } catch (error) {
-      setErrorMessage("Kamerani yoqib bo‘lmadi: " + error.message);
+      console.error("Kamerani yoqib bo'lmadi:", error);
     }
   };
 
   const stopCamera = () => {
     if (videoRef.current && videoRef.current.srcObject) {
-      videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+      const stream = videoRef.current.srcObject as MediaStream;
+      stream.getTracks().forEach((track) => track.stop());
       videoRef.current.srcObject = null;
     }
+    setIsCameraOn(false);
   };
 
   const handleCameraToggle = () => {
     if (isCameraOn) {
       stopCamera();
-      setIsCameraOn(false);
     } else {
       startCamera();
-      setIsCameraOn(true);
     }
   };
 
-
   const handleUpgrade = () => {
-    upgradeToPro();
     setShowProModal(false);
-    console.log('Upgraded to Pro automatically');
   };
 
   const currentChild = children[activeChild];
@@ -163,8 +206,11 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout }) => 
                 <span className="hidden sm:inline">Pro</span>
               </button>
             )}
-            <button className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors">
-              <Settings className="w-5 h-5 text-gray-600" />
+            <button 
+              onClick={() => setShowSettings(true)}
+              className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors"
+            >
+              <SettingsIcon className="w-5 h-5 text-gray-600" />
             </button>
             <button
               onClick={onLogout}
@@ -227,7 +273,7 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout }) => 
             <p className="text-sm text-gray-500 mt-2">Oxirgi yangilanish: {currentChild.lastSeen}</p>
           </div>
 
-          {/* Camera Card - Free */}
+          {/* Camera Card */}
           <div className="glass-card rounded-2xl p-6 hover-lift animate-fade-in" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-10 h-10 bg-purple-100 rounded-xl flex items-center justify-center">
@@ -245,7 +291,6 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout }) => 
                 />
               ) : (
                 <CameraOff className="w-8 h-8 text-gray-400" />
-
               )}
             </div>
 
@@ -291,7 +336,7 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout }) => 
             <p className="text-sm text-gray-500">Bugungi kun</p>
           </div>
 
-          {/* Microphone Card - Still Pro */}
+          {/* Microphone Card */}
           <div className="glass-card rounded-2xl p-6 hover-lift animate-fade-in relative" style={{ animationDelay: '0.4s' }}>
             <div className="flex items-center space-x-3 mb-4">
               <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center">
@@ -325,7 +370,7 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout }) => 
               <h3 className="text-lg font-semibold text-gray-900">Qurilma</h3>
             </div>
             <p className="text-gray-900 font-medium mb-1">{currentChild.device}</p>
-            <p className="text-sm text-gray-500">Android 12</p>
+            <p className="text-sm text-gray-500">{navigator.userAgent.includes('Mobile') ? 'Mobile' : 'Desktop'}</p>
             <div className="flex items-center space-x-2 mt-3">
               <div className={`w-2 h-2 rounded-full ${currentChild.isOnline ? 'bg-green-500' : 'bg-gray-400'}`} />
               <span className="text-sm text-gray-600">
@@ -379,6 +424,15 @@ const ParentDashboard: React.FC<ParentDashboardProps> = ({ user, onLogout }) => 
         onClose={() => setShowProModal(false)}
         onUpgrade={handleUpgrade}
       />
+
+      {/* Settings Modal */}
+      <Settings
+        isOpen={showSettings}
+        onClose={() => setShowSettings(false)}
+      />
+
+      {/* Contact Button */}
+      <ContactButton />
     </div>
   );
 };
