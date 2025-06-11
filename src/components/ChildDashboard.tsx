@@ -1,13 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { 
-  Shield, 
-  Heart, 
-  Sun, 
-  Star, 
+import {
+  Shield,
+  Heart,
+  Sun,
+  Star,
   ArrowLeft,
-  Battery,
-  Wifi
 } from 'lucide-react';
 
 interface ChildDashboardProps {
@@ -17,7 +15,6 @@ interface ChildDashboardProps {
 
 const ChildDashboard: React.FC<ChildDashboardProps> = ({ childKey, onBack }) => {
   const [currentTime, setCurrentTime] = useState(new Date());
-  const [battery, setBattery] = useState(85);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -28,12 +25,28 @@ const ChildDashboard: React.FC<ChildDashboardProps> = ({ childKey, onBack }) => 
   }, []);
 
   const motivationalMessages = [
-    "Bugun ajoyib kun! 😊",
-    "Siz juda yaxshi farzandsiz! ⭐",
-    "Ota-onangiz sizni sevadi! ❤️",
-    "Har doim xavfsizlikda bo'ling! 🛡️",
-    "Bugun nimalar o'rganasiz? 📚"
+    "Bugun tabassum qildingizmi? 😊",
+    "Siz ajoyib bola ekansiz! ⭐",
+    "O‘rganish – bu sarguzasht! 🧠✨",
+    "Doim mehribon bo‘ling! ❤️",
+    "Yaxshi ish qilganingiz uchun barakalla! 🎉",
+    "Har bir kun – yangi imkoniyat! 🌞",
+    "Ota-onangiz siz bilan faxrlanadi! 👨‍👩‍👧‍👦",
+    "Do‘stlaringizni qadrlang! 🤝",
+    "O‘zingizga ishonchingizni yo‘qotmang! 💪",
+    "Bugun qanday yaxshi ish qildingiz? 🌟",
+    "Xatolardan qo‘rqmang, ular sizni o‘stiradi! 🧩",
+    "Xavfsizlik har doim birinchi o‘rinda! 🛡️",
+    "Kitoblar – bilim xazinasi! 📚",
+    "O‘yin ham, bilim ham kerakli! ⚽📖",
+    "Siz dunyoni go‘zallashtirasiz! 🌍",
+    "Sog‘lom tanada – sog‘lom aql! 🏃‍♂️🍎",
+    "Bugun biror yangilik o‘rgandingizmi? 🔍",
+    "Mehr bilan qilgan ishlar unutilmaydi! 🤗",
+    "Do‘stlaringizga mehr ko‘rsating! 💞",
+    "Siz har kuni biroz kuchliroqsiz! 🏆"
   ];
+
 
   const [currentMessage] = useState(
     motivationalMessages[Math.floor(Math.random() * motivationalMessages.length)]
@@ -44,18 +57,11 @@ const ChildDashboard: React.FC<ChildDashboardProps> = ({ childKey, onBack }) => 
       {/* Header */}
       <div className="bg-white/80 backdrop-blur-lg p-4">
         <div className="flex items-center justify-between">
-          <button
-            onClick={onBack}
-            className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          
+          <h3>Olimtoy Platformasi</h3>
+
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-1">
-              <Wifi className="w-4 h-4 text-green-500" />
-              <Battery className="w-4 h-4 text-green-500" />
-              <span className="text-sm font-medium text-gray-700">{battery}%</span>
+              <h3>v1</h3>
             </div>
           </div>
         </div>
@@ -65,13 +71,13 @@ const ChildDashboard: React.FC<ChildDashboardProps> = ({ childKey, onBack }) => 
         {/* Time Display */}
         <div className="text-center mb-8 animate-fade-in">
           <div className="text-4xl font-bold text-gray-900 mb-2">
-            {currentTime.toLocaleTimeString('uz-UZ', { 
-              hour: '2-digit', 
-              minute: '2-digit' 
+            {currentTime.toLocaleTimeString('uz-UZ', {
+              hour: '2-digit',
+              minute: '2-digit'
             })}
           </div>
           <div className="text-lg text-gray-600">
-            {currentTime.toLocaleDateString('uz-UZ', { 
+            {currentTime.toLocaleDateString('uz-UZ', {
               weekday: 'long',
               day: 'numeric',
               month: 'long'
@@ -87,10 +93,10 @@ const ChildDashboard: React.FC<ChildDashboardProps> = ({ childKey, onBack }) => 
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900">Himoyalangan</h3>
-              <p className="text-sm text-gray-600">Ota-ona bilan bog'langan</p>
+              <p className="text-sm text-gray-600">Siz Olimtoy platformasi orqali kuzatilmoqdasiz!</p>
             </div>
           </div>
-          
+
           <div className="bg-green-50 rounded-xl p-4 text-center">
             <p className="text-sm text-green-700 font-medium">
               Kalit: <span className="font-mono text-lg">{childKey}</span>

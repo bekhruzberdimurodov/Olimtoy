@@ -12,11 +12,6 @@ const ParentChildSetup: React.FC<ParentChildSetupProps> = ({ onBack, onComplete 
   const [childKey, setChildKey] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
-  const generateRandomKey = () => {
-    const key = Math.random().toString(36).substr(2, 6).toUpperCase();
-    setChildKey(key);
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!childName.trim() || !childKey.trim()) return;
@@ -85,13 +80,6 @@ const ParentChildSetup: React.FC<ParentChildSetupProps> = ({ onBack, onComplete 
                   maxLength={6}
                   required
                 />
-                <button
-                  type="button"
-                  onClick={generateRandomKey}
-                  className="px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
-                >
-                  Yaratish
-                </button>
               </div>
               <p className="text-xs text-gray-500 mt-2">
                 Farzand qurilmasida bu kalitni kiritish kerak bo'ladi
